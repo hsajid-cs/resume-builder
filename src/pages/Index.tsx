@@ -1,4 +1,3 @@
-
 import { useRef, useState } from "react";
 import { Navbar } from "@/features/resume/Navbar";
 import { SectionNav } from "@/features/resume/SectionNav";
@@ -9,22 +8,20 @@ import { defaultPersonalInfo, PersonalInfo } from "@/features/resume/types";
 import { useToast } from "@/hooks/use-toast";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState<string>("Personal Information");
   const [info, setInfo] = useState<PersonalInfo>(defaultPersonalInfo());
   const previewRef = useRef<HTMLDivElement | null>(null);
   const { toast } = useToast();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sections, setSections] = useState<{ id: string; label: string; visible: boolean }[]>([
     { id: "Personal Information", label: "Personal Information", visible: true },
     { id: "Summary", label: "Summary", visible: true },
-    { id: "Work Experience", label: "Work Experience", visible: true },
     { id: "Education", label: "Education", visible: true },
-    { id: "Skills", label: "Skills", visible: true },
+    { id: "Experience", label: "Experience", visible: true },
     { id: "Projects", label: "Projects", visible: true },
-    { id: "Awards & Recognition", label: "Awards & Recognition", visible: true },
-    { id: "Publications", label: "Publications", visible: true },
-    { id: "Volunteering", label: "Volunteering", visible: true },
   ]);
 
   const handleReorderSections = (from: number, to: number) => {
@@ -39,7 +36,6 @@ const Index = () => {
   const handleToggleSectionVisibility = (id: string, visible: boolean) => {
     setSections((prev) => prev.map((s) => (s.id === id ? { ...s, visible } : s)));
   };
-
 
   const handleExport = async () => {
     try {
@@ -86,7 +82,35 @@ const Index = () => {
 
   return (
     <div>
-      <Navbar onExport={handleExport} />
+      <Navbar onExport={handleExport} onOpenSidebar={() => setIsSidebarOpen(true)} />
+
+      {/* Mobile Sidebar */}
+      <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+        <SheetContent side="left" className="p-0 w-[85vw] sm:max-w-sm">
+          <div className="p-4 border-b">
+            <h2 className="text-base font-semibold">Sections</h2>
+          </div>
+          <div className="p-3">
+            <SectionNav
+              sections={sections}
+              active={activeSection}
+              onSelect={(id) => {
+                setActiveSection(id);
+                setIsSidebarOpen(false);
+              }}
+              onReorder={handleReorderSections}
+              onToggleVisibility={handleToggleSectionVisibility}
+              onAddSection={(section) => {
+                setSections((prev) => {
+                  if (prev.some((s) => s.id === section.id)) return prev;
+                  return [...prev, { id: section.id, label: section.label, visible: true }];
+                });
+              }}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
+
       <main className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-12" role="main">
         <aside className="hidden lg:col-span-3 lg:block" aria-label="Sections">
           <SectionNav
@@ -95,6 +119,12 @@ const Index = () => {
             onSelect={setActiveSection}
             onReorder={handleReorderSections}
             onToggleVisibility={handleToggleSectionVisibility}
+            onAddSection={(section) => {
+              setSections((prev) => {
+                if (prev.some((s) => s.id === section.id)) return prev;
+                return [...prev, { id: section.id, label: section.label, visible: true }];
+              });
+            }}
           />
         </aside>
         <section className="lg:col-span-6" aria-labelledby="form-heading">

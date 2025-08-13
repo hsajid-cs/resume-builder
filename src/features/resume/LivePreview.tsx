@@ -48,7 +48,7 @@ export const LivePreview = React.forwardRef<HTMLDivElement, LivePreviewProps>(
                         </p>
                       </section>
                     );
-                  case "Work Experience":
+                  case "Experience":
                     return (
                       <section key={s.id} aria-label="Experience" className="mt-4 space-y-2 animate-fade-in">
                         <h3 className="text-sm font-medium tracking-wide">EXPERIENCE</h3>
